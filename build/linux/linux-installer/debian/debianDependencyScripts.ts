@@ -7,7 +7,26 @@ import { spawnSync } from 'child_process';
 
 export function calculatePackageDeps(binaryPath: string, sysrootPath: string, arch: string): PackageVersionInterval[] {
 	const shlibDepsFile = 'third_party/dpkg-shlibdeps/dpkg-shlibdeps.pl';
-	const shlibDepsArgs: string[] = [];
+	const shlibDepsArgs: string[] = ['--ignore-weak-undefined'];
+
+	switch (arch) {
+		case 'x64':
+			shlibDepsArgs.push(`-l${sysrootPath}/usr/lib/x86_64-linux-gnu`, `-l${sysrootPath}/lib/x86_64-linux-gnu`);
+			break;
+		case 'x86':
+			shlibDepsArgs.push(`-l${sysrootPath}/usr/lib/i386-linux-gnu`, `-l${sysrootPath}/lib/i386-linux-gnu`);
+			break;
+		case 'arm':
+			shlibDepsArgs.push(`-l${sysrootPath}/usr/lib/arm-linux-gnueabihf`, `-l${sysrootPath}/lib/arm-linux-gnueabihf`);
+			break;
+		case 'arm64':
+			shlibDepsArgs.push(`-l${sysrootPath}/usr/lib/aarch64-linux-gnu`, `-l${sysrootPath}/lib/aarch64-linux-gnu`);
+			break;
+		default:
+			throw new Error('Unsupported arch ' + arch);
+
+	}
+
 	shlibDepsArgs.push(`-l${sysrootPath}/usr/lib`, '-O', '-e', binaryPath);
 	const result = spawnSync(shlibDepsFile, shlibDepsArgs);
 	if (result.status !== 0) {
@@ -23,7 +42,7 @@ export function calculatePackageDeps(binaryPath: string, sysrootPath: string, ar
 		}
 	}
 	const dependencies = depsStr.split(', ');
-	const intervals: PackageVersionInterval = [];
+	const intervals: PackageVersionInterval[] = [];
 	if (depsStr.length) {
 		for (const dependency of dependencies) {
 			intervals.push(parseInterval(dependency));
