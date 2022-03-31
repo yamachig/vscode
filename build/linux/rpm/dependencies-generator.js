@@ -57,7 +57,9 @@ function calculatePackageDeps(binaryPath) {
     if (findRequiresResult.status !== 0) {
         throw new Error(`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`);
     }
-    const requires = new Set(findRequiresResult.stdout.toString('utf-8').trimEnd().split('\n'));
+    const requiresString = findRequiresResult.stdout.toString('utf-8').trimEnd();
+    console.log(`Requires for ${binaryPath}:\n${requiresString}\n`);
+    const requires = new Set(requiresString.split('\n'));
     // we only need to use provides to check for newer dependencies
     // const provides = readFileSync('dist_package_provides.json');
     // const jsonProvides = JSON.parse(provides.toString('utf-8'));
