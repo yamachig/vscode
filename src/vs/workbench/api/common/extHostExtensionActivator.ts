@@ -217,6 +217,9 @@ export class ExtensionsActivator implements IDisposable {
 		}
 
 		const activateExtensions = this._registry.getExtensionDescriptionsForActivationEvent(activationEvent);
+		if (!startup && /^(onCommand|onView|onCommand|onWebviewPanel|onCustomEditor):/.test(activationEvent) && activateExtensions.length > 0) {
+			console.log(activationEvent, activateExtensions.map(e => e.id).join(','));
+		}
 		await this._activateExtensions(activateExtensions.map(e => ({
 			id: e.identifier,
 			reason: { startup, extensionId: e.identifier, activationEvent }
