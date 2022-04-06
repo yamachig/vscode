@@ -16,6 +16,8 @@ const task = require('./lib/task');
 const packageJson = require('../package.json');
 const product = require('../product.json');
 const rpmDependenciesGenerator = require('./linux/rpm/dependencies-generator');
+const debianDependenciesGenerator = require('./linux/debian/dependencies-generator');
+const debianRecommendedDependencies = require('./linux/debian/dep-lists').recommendedDeps;
 const path = require('path');
 const root = path.dirname(__dirname);
 const commit = util.getVersion(root);
@@ -76,33 +78,34 @@ function prepareDebPackage(arch) {
 			function (f) { size += f.isDirectory() ? 4096 : f.contents.length; },
 			function () {
 				const that = this;
-				const dependencies = debianDependenciesGenerator.getDebianDependencies(debArch);
+				const dependencies = debianDependenciesGenerator.getDependencies(binaryDir, product.applicationName, debArch);
 				gulp.src('resources/linux/debian/control.template', { base: '.' })
 					.pipe(replace('@@NAME@@', product.applicationName))
 					.pipe(replace('@@VERSION@@', packageJson.version + '-' + linuxPackageRevision))
 					.pipe(replace('@@ARCHITECTURE@@', debArch))
-					.pipe(replace('@@DEPENDS@@', dependencies.join(', ')));
+					.pipe(replace('@@DEPENDS@@', dependencies.join(', ')))
+					.pipe(replace('@@RECOMMENDS@@', debianRecommendedDependencies.join(', ')))
 					.pipe(replace('@@INSTALLEDSIZE@@', Math.ceil(size / 1024)))
-				.pipe(rename('DEBIAN/control'))
-				.pipe(es.through(function (f) { that.emit('data', f); }, function () { that.emit('end'); }));
-	}));
+					.pipe(rename('DEBIAN/control'))
+					.pipe(es.through(function (f) { that.emit('data', f); }, function () { that.emit('end'); }));
+			}));
 
-	const prerm = gulp.src('resources/linux/debian/prerm.template', { base: '.' })
-		.pipe(replace('@@NAME@@', product.applicationName))
-		.pipe(rename('DEBIAN/prerm'));
+		const prerm = gulp.src('resources/linux/debian/prerm.template', { base: '.' })
+			.pipe(replace('@@NAME@@', product.applicationName))
+			.pipe(rename('DEBIAN/prerm'));
 
-	const postrm = gulp.src('resources/linux/debian/postrm.template', { base: '.' })
-		.pipe(replace('@@NAME@@', product.applicationName))
-		.pipe(rename('DEBIAN/postrm'));
+		const postrm = gulp.src('resources/linux/debian/postrm.template', { base: '.' })
+			.pipe(replace('@@NAME@@', product.applicationName))
+			.pipe(rename('DEBIAN/postrm'));
 
-	const postinst = gulp.src('resources/linux/debian/postinst.template', { base: '.' })
-		.pipe(replace('@@NAME@@', product.applicationName))
-		.pipe(rename('DEBIAN/postinst'));
+		const postinst = gulp.src('resources/linux/debian/postinst.template', { base: '.' })
+			.pipe(replace('@@NAME@@', product.applicationName))
+			.pipe(rename('DEBIAN/postinst'));
 
-	const all = es.merge(control, postinst, postrm, prerm, desktops, appdata, workspaceMime, icon, bash_completion, zsh_completion, code);
+		const all = es.merge(control, postinst, postrm, prerm, desktops, appdata, workspaceMime, icon, bash_completion, zsh_completion, code);
 
-	return all.pipe(vfs.dest(destination));
-};
+		return all.pipe(vfs.dest(destination));
+	};
 }
 
 /**

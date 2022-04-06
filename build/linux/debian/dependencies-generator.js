@@ -9,7 +9,7 @@ const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const path = require("path");
 const dep_lists_1 = require("./dep-lists");
-function getDependencies(buildDir, applicationName) {
+function getDependencies(buildDir, applicationName, arch) {
     // Get the files for which we want to find dependencies.
     const nativeModulesPath = path.join(buildDir, 'resources', 'app', 'node_modules.asar.unpacked');
     const findResult = (0, child_process_1.spawnSync)('find', [nativeModulesPath, '-name', '*.node']);
@@ -25,7 +25,7 @@ function getDependencies(buildDir, applicationName) {
     files.push(path.join(buildDir, 'chrome-sandbox'));
     files.push(path.join(buildDir, 'chrome_crashpad_handler'));
     // Generate the dependencies.
-    const dependencies = files.map((file) => calculatePackageDeps(file));
+    const dependencies = files.map((file) => calculatePackageDeps(file, arch));
     // Add additional dependencies.
     const additionalDepsSet = new Set(dep_lists_1.additionalDeps);
     dependencies.push(additionalDepsSet);
@@ -43,8 +43,9 @@ function getDependencies(buildDir, applicationName) {
     return sortedDependencies;
 }
 exports.getDependencies = getDependencies;
-function calculatePackageDeps(binaryPath) {
+function calculatePackageDeps(binaryPath, arch) {
     // TODO: Do we need this following try-catch check for Debian?
+    // Test by running it through the CL.
     try {
         if (!((0, fs_1.statSync)(binaryPath).mode & fs_1.constants.S_IXUSR)) {
             throw new Error(`Binary ${binaryPath} needs to have an executable bit set.`);
@@ -54,12 +55,12 @@ function calculatePackageDeps(binaryPath) {
         // The package might not exist. Don't re-throw the error here.
         console.error('Tried to stat ' + binaryPath + ' but failed.');
     }
-    // We want to call dpkg-shlibdeps.pl here.
-    // That file takes in binary, sysroot, arch
-    const sysroot = 'temp';
-    const arch = 'x64-temp';
-    const dpkgShlibdepsScriptLocation = './dpkg-shlibdeps.pl';
-    const cmd = ['--ignore-weak-undefined'];
+    // TODO: Fix the sysroot parameter
+    const sysroot = '';
+    // With the Chromium dpkg-shlibdeps, we would be able to add an --ignore-weak-undefined flag.
+    // For now, try using the system dpkg-shlibdeps instead of the Chromium one.
+    const dpkgShlibdepsScriptLocation = '/usr/bin/dpkg-shlibdeps';
+    const cmd = [];
     switch (arch) {
         case 'x64':
             cmd.push(`-l${sysroot}/usr/lib/x86_64-linux-gnu`, `-l${sysroot}/lib/x84_64-linux-gnu`);

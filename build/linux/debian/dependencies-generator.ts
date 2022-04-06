@@ -10,7 +10,7 @@ import { constants, statSync } from 'fs';
 import path = require('path');
 import { additionalDeps, bundledDeps } from './dep-lists';
 
-export function getDependencies(buildDir: string, applicationName: string): string[] {
+export function getDependencies(buildDir: string, applicationName: string, arch: string): string[] {
 	// Get the files for which we want to find dependencies.
 	const nativeModulesPath = path.join(buildDir, 'resources', 'app', 'node_modules.asar.unpacked');
 	const findResult = spawnSync('find', [nativeModulesPath, '-name', '*.node']);
@@ -30,7 +30,7 @@ export function getDependencies(buildDir: string, applicationName: string): stri
 	files.push(path.join(buildDir, 'chrome_crashpad_handler'));
 
 	// Generate the dependencies.
-	const dependencies: Set<string>[] = files.map((file) => calculatePackageDeps(file));
+	const dependencies: Set<string>[] = files.map((file) => calculatePackageDeps(file, arch));
 
 	// Add additional dependencies.
 	const additionalDepsSet = new Set(additionalDeps);
@@ -52,8 +52,9 @@ export function getDependencies(buildDir: string, applicationName: string): stri
 	return sortedDependencies;
 }
 
-function calculatePackageDeps(binaryPath: string): Set<string> {
+function calculatePackageDeps(binaryPath: string, arch: string): Set<string> {
 	// TODO: Do we need this following try-catch check for Debian?
+	// Test by running it through the CL.
 	try {
 		if (!(statSync(binaryPath).mode & constants.S_IXUSR)) {
 			throw new Error(`Binary ${binaryPath} needs to have an executable bit set.`);
@@ -63,9 +64,8 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
 		console.error('Tried to stat ' + binaryPath + ' but failed.');
 	}
 
-	// TODO: Fix the sysroot and arch parameters
-	const sysroot = 'temp';
-	const arch: string = 'x64-temp';
+	// TODO: Fix the sysroot parameter
+	const sysroot = '';
 
 	// With the Chromium dpkg-shlibdeps, we would be able to add an --ignore-weak-undefined flag.
 	// For now, try using the system dpkg-shlibdeps instead of the Chromium one.
