@@ -56,7 +56,7 @@ function calculatePackageDeps(binaryPath, arch) {
         console.error('Tried to stat ' + binaryPath + ' but failed.');
     }
     // TODO: Fix the sysroot parameter
-    const sysroot = '';
+    const sysroot = '.';
     // With the Chromium dpkg-shlibdeps, we would be able to add an --ignore-weak-undefined flag.
     // For now, try using the system dpkg-shlibdeps instead of the Chromium one.
     const dpkgShlibdepsScriptLocation = '/usr/bin/dpkg-shlibdeps';
