@@ -72,15 +72,11 @@ function calculatePackageDeps(binaryPath: string, arch: string): Set<string> {
 	const dpkgShlibdepsScriptLocation = '/usr/bin/dpkg-shlibdeps';
 	const cmd = [];
 	switch (arch) {
-		case 'x64':
+		case 'amd64':
 			cmd.push(`-l${sysroot}/usr/lib/x86_64-linux-gnu`,
 				`-l${sysroot}/lib/x84_64-linux-gnu`);
 			break;
-		case 'x86':
-			cmd.push(`-l${sysroot}/usr/lib/i386-linux-gnu`,
-				`-l${sysroot}/lib/i386-linux-gnu`);
-			break;
-		case 'arm':
+		case 'armhf':
 			cmd.push(`-l${sysroot}/usr/lib/arm-linux-gnueabihf`,
 				`-l${sysroot}/lib/arm-linux-gnueabihf`);
 			break;
