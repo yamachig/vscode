@@ -568,7 +568,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 
 	private async updateControlCache(): Promise<IExtensionsControlManifest> {
 		try {
-			this.logService.trace('ExtensionManagementService.refreshReportedCache 2');
+			this.logService.trace('ExtensionManagementService.refreshReportedCache 3');
 			const manifest = await this.galleryService.getExtensionsControlManifest();
 			this.logService.trace(`ExtensionManagementService.refreshControlCache`, manifest);
 			return manifest;
