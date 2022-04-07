@@ -33,6 +33,7 @@ export async function resolveElectronConfiguration(options: LaunchOptions): Prom
 		'--skip-release-notes',
 		'--skip-welcome',
 		'--disable-telemetry',
+		'--sync=off',
 		'--no-cached-data',
 		'--disable-updates',
 		'--disable-keytar',
