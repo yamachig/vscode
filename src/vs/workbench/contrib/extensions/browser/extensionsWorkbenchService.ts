@@ -455,6 +455,9 @@ class Extensions extends Disposable {
 		this.logService.info(`!!! Extensions.queryInstalled 5`);
 
 		this._onChange.fire(undefined);
+
+		this.logService.info(`!!! Extensions.queryInstalled 6`);
+
 		return this.local;
 	}
 
