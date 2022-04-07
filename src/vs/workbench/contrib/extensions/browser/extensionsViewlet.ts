@@ -453,7 +453,8 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
 		@IExtensionService extensionService: IExtensionService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@ICommandService private readonly commandService: ICommandService
+		@ICommandService private readonly commandService: ICommandService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super(VIEWLET_ID, { mergeViewWithContainerWhenSingleView: true }, instantiationService, configurationService, layoutService, contextMenuService, telemetryService, extensionService, themeService, storageService, contextService, viewDescriptorService);
 
@@ -646,7 +647,10 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
 
 		return this.progress(Promise.all(this.panes.map(view =>
 			(<ExtensionsListView>view).show(this.normalizedQuery(), refresh)
-				.then(model => this.alertSearchResult(model.length, view.id))
+				.then(model => {
+					this.logService.info(`!!! refreshExtension: View not found ${model.length}, ${model.isResolved}`);
+					return this.alertSearchResult(model.length, view.id);
+				})
 		))).then(() => undefined);
 	}
 

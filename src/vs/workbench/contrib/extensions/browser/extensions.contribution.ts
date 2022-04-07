@@ -76,6 +76,7 @@ import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 import { UnsupportedExtensionsMigrationContrib } from 'vs/workbench/contrib/extensions/browser/unsupportedExtensionsMigrationContribution';
 import { isWeb } from 'vs/base/common/platform';
 import { ExtensionsCleaner } from 'vs/workbench/contrib/extensions/browser/extensionsCleaner';
+import { ILogService } from 'vs/platform/log/common/log';
 
 // Singletons
 registerSingleton(IExtensionsWorkbenchService, ExtensionsWorkbenchService);
@@ -1126,9 +1127,16 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
 				order: 2
 			},
 			run: async (accessor: ServicesAccessor) => {
-				const viewPaneContainer = accessor.get(IViewsService).getActiveViewPaneContainerWithId(VIEWLET_ID);
-				if (viewPaneContainer) {
-					await (viewPaneContainer as IExtensionsViewPaneContainer).refresh();
+				const logService = accessor.get(ILogService);
+				try {
+					const viewPaneContainer = accessor.get(IViewsService).getActiveViewPaneContainerWithId(VIEWLET_ID);
+					if (viewPaneContainer) {
+						await (viewPaneContainer as IExtensionsViewPaneContainer).refresh();
+					} else {
+						logService.error('!!! refreshExtension: View not found');
+					}
+				} catch (error) {
+					logService.error('!!! refreshExtension: Error', error);
 				}
 			}
 		});
