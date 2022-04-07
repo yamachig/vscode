@@ -9,6 +9,7 @@ const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const path = require("path");
 const dep_lists_1 = require("./dep-lists");
+const install_sysroot_1 = require("./install-sysroot");
 function getDependencies(buildDir, applicationName, arch) {
     // Get the files for which we want to find dependencies.
     const nativeModulesPath = path.join(buildDir, 'resources', 'app', 'node_modules.asar.unpacked');
@@ -16,7 +17,7 @@ function getDependencies(buildDir, applicationName, arch) {
     if (findResult.status) {
         console.error('Error finding files:');
         console.error(findResult.stderr.toString());
-        return [];
+        return Promise.resolve([]);
     }
     const files = findResult.stdout.toString().trimEnd().split('\n');
     const appPath = path.join(buildDir, applicationName);
@@ -26,24 +27,26 @@ function getDependencies(buildDir, applicationName, arch) {
     files.push(path.join(buildDir, 'chrome_crashpad_handler'));
     // Generate the dependencies.
     const dependencies = files.map((file) => calculatePackageDeps(file, arch));
-    // Add additional dependencies.
-    const additionalDepsSet = new Set(dep_lists_1.additionalDeps);
-    dependencies.push(additionalDepsSet);
-    // Merge all the dependencies.
-    const mergedDependencies = mergePackageDeps(dependencies);
-    let sortedDependencies = [];
-    for (const dependency of mergedDependencies) {
-        sortedDependencies.push(dependency);
-    }
-    sortedDependencies.sort();
-    // Exclude bundled dependencies
-    sortedDependencies = sortedDependencies.filter(dependency => {
-        return !dep_lists_1.bundledDeps.some(bundledDep => dependency.startsWith(bundledDep));
+    return Promise.all(dependencies).then((resolvedDependencies) => {
+        // Add additional dependencies.
+        const additionalDepsSet = new Set(dep_lists_1.additionalDeps);
+        resolvedDependencies.push(additionalDepsSet);
+        // Merge all the dependencies.
+        const mergedDependencies = mergePackageDeps(resolvedDependencies);
+        let sortedDependencies = [];
+        for (const dependency of mergedDependencies) {
+            sortedDependencies.push(dependency);
+        }
+        sortedDependencies.sort();
+        // Exclude bundled dependencies
+        sortedDependencies = sortedDependencies.filter(dependency => {
+            return !dep_lists_1.bundledDeps.some(bundledDep => dependency.startsWith(bundledDep));
+        });
+        return sortedDependencies;
     });
-    return sortedDependencies;
 }
 exports.getDependencies = getDependencies;
-function calculatePackageDeps(binaryPath, arch) {
+async function calculatePackageDeps(binaryPath, arch) {
     // TODO: Do we need this following try-catch check for Debian?
     // Test by running it through the CL.
     try {
@@ -55,8 +58,7 @@ function calculatePackageDeps(binaryPath, arch) {
         // The package might not exist. Don't re-throw the error here.
         console.error('Tried to stat ' + binaryPath + ' but failed.');
     }
-    // TODO: Fix the sysroot parameter
-    const sysroot = '.';
+    const sysroot = await (0, install_sysroot_1.getSysroot)(arch);
     // With the Chromium dpkg-shlibdeps, we would be able to add an --ignore-weak-undefined flag.
     // For now, try using the system dpkg-shlibdeps instead of the Chromium one.
     const dpkgShlibdepsScriptLocation = '/usr/bin/dpkg-shlibdeps';
