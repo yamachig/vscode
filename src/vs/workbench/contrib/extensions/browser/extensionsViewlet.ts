@@ -593,7 +593,11 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
 
 	async refresh(): Promise<void> {
 		this.logService.info(`!!! before updateInstalledExtensionsContexts`);
-		await this.updateInstalledExtensionsContexts();
+		try {
+			await this.updateInstalledExtensionsContexts();
+		} catch (error) {
+			this.logService.info(`!!! error updateInstalledExtensionsContexts`, error);
+		}
 		this.logService.info(`!!! after updateInstalledExtensionsContexts`);
 		this.doSearch(true);
 		this.logService.info(`!!! after doSearch`);

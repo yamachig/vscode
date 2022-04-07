@@ -764,18 +764,22 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 	async queryLocal(server?: IExtensionManagementServer): Promise<IExtension[]> {
 		if (server) {
 			if (this.localExtensions && this.extensionManagementServerService.localExtensionManagementServer === server) {
+				this.logService.info(`!!! localExtensions.queryInstalled`);
 				return this.localExtensions.queryInstalled();
 			}
 			if (this.remoteExtensions && this.extensionManagementServerService.remoteExtensionManagementServer === server) {
+				this.logService.info(`!!! remoteExtensions.queryInstalled`);
 				return this.remoteExtensions.queryInstalled();
 			}
 			if (this.webExtensions && this.extensionManagementServerService.webExtensionManagementServer === server) {
+				this.logService.info(`!!! webExtensions.queryInstalled`);
 				return this.webExtensions.queryInstalled();
 			}
 		}
 
 		if (this.localExtensions) {
 			try {
+				this.logService.info(`!!! localExtensions.queryInstalled`);
 				await this.localExtensions.queryInstalled();
 			}
 			catch (error) {
@@ -784,6 +788,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 		}
 		if (this.remoteExtensions) {
 			try {
+				this.logService.info(`!!! remoteExtensions.queryInstalled`);
 				await this.remoteExtensions.queryInstalled();
 			}
 			catch (error) {
@@ -792,6 +797,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 		}
 		if (this.webExtensions) {
 			try {
+				this.logService.info(`!!! webExtensions.queryInstalled`);
 				await this.webExtensions.queryInstalled();
 			}
 			catch (error) {
