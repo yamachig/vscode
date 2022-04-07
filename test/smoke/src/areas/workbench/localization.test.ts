@@ -19,7 +19,7 @@ export function setup(logger: Logger) {
 			const app = this.app as Application;
 			await app.workbench.extensions.openExtensionsViewlet();
 			await app.workbench.extensions.installExtension('ms-ceintl.vscode-language-pack-de', false);
-			await app.restart({ extraArgs: ['--locale=DE'] }); // 9
+			await app.restart({ extraArgs: ['--locale=DE'] }); // 10
 
 			const result = await app.workbench.localization.getLocalizedStrings();
 			const localeInfo = await app.workbench.localization.getLocaleInfo();
