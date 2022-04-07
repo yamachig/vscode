@@ -1125,37 +1125,47 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 			return { malicious: [] };
 		}
 
-		const context = await this.requestService.request({ type: 'GET', url: this.extensionsControlUrl }, CancellationToken.None);
-		if (context.res.statusCode !== 200) {
-			throw new Error('Could not get extensions report.');
-		}
-
-		const result = await asJson<IRawExtensionsControlManifest>(context);
-		const malicious: IExtensionIdentifier[] = [];
-		const unsupportedPreReleaseExtensions: IStringDictionary<{ id: string; displayName: string; migrateStorage?: boolean }> = {};
-
-		if (result) {
-			for (const id of result.malicious) {
-				malicious.push({ id });
+		this.logService.info(`??? getExtensionsControlManifest before request`);
+		try {
+			const context = await this.requestService.request({ type: 'GET', url: this.extensionsControlUrl }, CancellationToken.None);
+			this.logService.info(`??? getExtensionsControlManifest after request`);
+			if (context.res.statusCode !== 200) {
+				throw new Error('Could not get extensions report.');
 			}
-			if (result.unsupported) {
-				for (const extensionId of Object.keys(result.unsupported)) {
-					const value = result.unsupported[extensionId];
-					if (!isBoolean(value)) {
-						unsupportedPreReleaseExtensions[extensionId.toLowerCase()] = value.preReleaseExtension;
+
+			const result = await asJson<IRawExtensionsControlManifest>(context);
+			this.logService.info(`??? getExtensionsControlManifest after asJson`);
+			const malicious: IExtensionIdentifier[] = [];
+			const unsupportedPreReleaseExtensions: IStringDictionary<{ id: string; displayName: string; migrateStorage?: boolean }> = {};
+
+			if (result) {
+				for (const id of result.malicious) {
+					malicious.push({ id });
+				}
+				if (result.unsupported) {
+					for (const extensionId of Object.keys(result.unsupported)) {
+						const value = result.unsupported[extensionId];
+						if (!isBoolean(value)) {
+							unsupportedPreReleaseExtensions[extensionId.toLowerCase()] = value.preReleaseExtension;
+						}
+					}
+				}
+				if (result.migrateToPreRelease) {
+					for (const [unsupportedPreReleaseExtensionId, preReleaseExtensionInfo] of Object.entries(result.migrateToPreRelease)) {
+						if (!preReleaseExtensionInfo.engine || isEngineValid(preReleaseExtensionInfo.engine, this.productService.version, this.productService.date)) {
+							unsupportedPreReleaseExtensions[unsupportedPreReleaseExtensionId.toLowerCase()] = preReleaseExtensionInfo;
+						}
 					}
 				}
 			}
-			if (result.migrateToPreRelease) {
-				for (const [unsupportedPreReleaseExtensionId, preReleaseExtensionInfo] of Object.entries(result.migrateToPreRelease)) {
-					if (!preReleaseExtensionInfo.engine || isEngineValid(preReleaseExtensionInfo.engine, this.productService.version, this.productService.date)) {
-						unsupportedPreReleaseExtensions[unsupportedPreReleaseExtensionId.toLowerCase()] = preReleaseExtensionInfo;
-					}
-				}
-			}
+
+			return { malicious, unsupportedPreReleaseExtensions };
+		} catch (error) {
+			this.logService.info(`??? getExtensionsControlManifest error`, error);
+
+			throw error;
 		}
 
-		return { malicious, unsupportedPreReleaseExtensions };
 	}
 }
 
