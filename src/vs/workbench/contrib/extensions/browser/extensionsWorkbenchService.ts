@@ -407,7 +407,8 @@ class Extensions extends Disposable {
 		private readonly stateProvider: IExtensionStateProvider<ExtensionState>,
 		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
 		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 		this._register(server.extensionManagementService.onInstallExtension(e => this.onInstallExtension(e)));
@@ -426,8 +427,11 @@ class Extensions extends Disposable {
 	}
 
 	async queryInstalled(): Promise<IExtension[]> {
+		this.logService.info(`!!! Extensions.queryInstalled 1`);
 		const extensionsControlManifest = await this.server.extensionManagementService.getExtensionsControlManifest();
+		this.logService.info(`!!! Extensions.queryInstalled 2`);
 		const all = await this.server.extensionManagementService.getInstalled();
+		this.logService.info(`!!! Extensions.queryInstalled 3`);
 
 		// dedup user and system extensions by giving priority to user extensions.
 		const installed = groupByExtension(all, r => r.identifier).reduce((result, extensions) => {
