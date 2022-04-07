@@ -14,6 +14,8 @@ export function setup(logger: Logger) {
 		installAllHandlers(logger);
 
 		it('starts with "DE" locale and verifies title and viewlets text is in German', async function () {
+			this.timeout(120000);
+
 			const app = this.app as Application;
 			await app.workbench.extensions.openExtensionsViewlet();
 			await app.workbench.extensions.installExtension('ms-ceintl.vscode-language-pack-de', false);
