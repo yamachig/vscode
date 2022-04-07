@@ -592,11 +592,15 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
 	}
 
 	async refresh(): Promise<void> {
+		this.logService.info(`!!! before updateInstalledExtensionsContexts`);
 		await this.updateInstalledExtensionsContexts();
+		this.logService.info(`!!! after updateInstalledExtensionsContexts`);
 		this.doSearch(true);
+		this.logService.info(`!!! after doSearch`);
 		if (this.configurationService.getValue(AutoCheckUpdatesConfigurationKey)) {
 			this.extensionsWorkbenchService.checkForUpdates();
 		}
+		this.logService.info(`!!! refresh done`);
 	}
 
 	private async updateInstalledExtensionsContexts(): Promise<void> {
