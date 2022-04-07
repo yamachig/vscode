@@ -451,6 +451,9 @@ class Extensions extends Disposable {
 			Extensions.updateExtensionFromControlManifest(extension, extensionsControlManifest);
 			return extension;
 		});
+
+		this.logService.info(`!!! Extensions.queryInstalled 5`);
+
 		this._onChange.fire(undefined);
 		return this.local;
 	}
