@@ -441,6 +441,8 @@ class Extensions extends Disposable {
 			return result;
 		}, []);
 
+		this.logService.info(`!!! Extensions.queryInstalled 4`);
+
 		const byId = index(this.installed, e => e.local ? e.local.identifier.id : e.identifier.id);
 		this.installed = installed.map(local => {
 			const extension = byId[local.identifier.id] || this.instantiationService.createInstance(Extension, this.stateProvider, this.server, local, undefined);
