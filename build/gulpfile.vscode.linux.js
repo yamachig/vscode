@@ -33,7 +33,7 @@ function prepareDebPackage(arch) {
 	const debArch = getDebPackageArch(arch);
 	const destination = '.build/linux/deb/' + debArch + '/' + product.applicationName + '-' + debArch;
 
-	return async function () {
+	return function () {
 		const desktop = gulp.src('resources/linux/code.desktop', { base: '.' })
 			.pipe(rename('usr/share/applications/' + product.applicationName + '.desktop'));
 
@@ -76,7 +76,7 @@ function prepareDebPackage(arch) {
 		let size = 0;
 		const control = code.pipe(es.through(
 			function (f) { size += f.isDirectory() ? 4096 : f.contents.length; },
-			function () {
+			async function () {
 				const that = this;
 				const dependencies = await debianDependenciesGenerator.getDependencies(binaryDir, product.applicationName, debArch);
 				gulp.src('resources/linux/debian/control.template', { base: '.' })
