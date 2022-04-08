@@ -132,7 +132,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			this.extensionsControlManifest = this.updateControlCache();
 			this.lastReportTimestamp = now;
 		} else {
-			this.logService.info('%%% getExtensionsControlManifest: returning cached promise'); // 4
+			this.logService.info('%%% getExtensionsControlManifest: returning cached promise'); // 5
 		}
 
 		return this.extensionsControlManifest;
