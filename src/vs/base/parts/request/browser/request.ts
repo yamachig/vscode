@@ -8,8 +8,10 @@ import { CancellationToken } from 'vs/base/common/cancellation';
 import { canceled } from 'vs/base/common/errors';
 import { IRequestContext, IRequestOptions, OfflineError } from 'vs/base/parts/request/common/request';
 
-export function request(options: IRequestOptions, token: CancellationToken): Promise<IRequestContext> {
+export function request(options: IRequestOptions, token: CancellationToken, logFn?: (msg: string) => void): Promise<IRequestContext> {
+	logFn?.(`request begin: ${JSON.stringify(options)}`);
 	if (!navigator.onLine) {
+		logFn?.(`offline!`);
 		throw new OfflineError();
 	}
 
@@ -22,34 +24,65 @@ export function request(options: IRequestOptions, token: CancellationToken): Pro
 
 	const xhr = new XMLHttpRequest();
 	return new Promise<IRequestContext>((resolve, reject) => {
+		try {
+			xhr.open(options.type || 'GET', options.url || '', true, options.user, options.password);
+			setRequestHeaders(xhr, options);
 
-		xhr.open(options.type || 'GET', options.url || '', true, options.user, options.password);
-		setRequestHeaders(xhr, options);
+			xhr.responseType = 'arraybuffer';
+			xhr.onerror = e => {
+				logFn?.('onError: ' + xhr.statusText);
+				return reject(new Error(xhr.statusText && ('XHR failed: ' + xhr.statusText) || 'XHR failed'));
+			};
+			xhr.onload = (e) => {
+				logFn?.('onLoad');
+				resolve({
+					res: {
+						statusCode: xhr.status,
+						headers: getResponseHeaders(xhr)
+					},
+					stream: bufferToStream(VSBuffer.wrap(new Uint8Array(xhr.response)))
+				});
+			};
+			xhr.ontimeout = e => {
+				logFn?.('onTimeout');
+				return reject(new Error(`XHR timeout: ${options.timeout}ms`));
+			};
+			xhr.onabort = () => {
+				logFn?.('onabort');
+				return reject(new Error(`XHR abort`));
+			};
 
-		xhr.responseType = 'arraybuffer';
-		xhr.onerror = e => reject(new Error(xhr.statusText && ('XHR failed: ' + xhr.statusText) || 'XHR failed'));
-		xhr.onload = (e) => {
-			resolve({
-				res: {
-					statusCode: xhr.status,
-					headers: getResponseHeaders(xhr)
-				},
-				stream: bufferToStream(VSBuffer.wrap(new Uint8Array(xhr.response)))
+			xhr.onloadend = () => {
+				logFn?.('onloadend');
+			};
+
+			xhr.onloadstart = () => {
+				logFn?.('onloadstart');
+			};
+
+			xhr.onprogress = () => {
+				logFn?.('onprogress');
+			};
+
+			xhr.onreadystatechange = () => {
+				logFn?.('onreadystatechange');
+			};
+
+			if (options.timeout) {
+				xhr.timeout = options.timeout;
+			}
+
+			xhr.send(options.data);
+
+			// cancel
+			token.onCancellationRequested(() => {
+				logFn?.('cancelled!');
+				xhr.abort();
+				reject(canceled());
 			});
-		};
-		xhr.ontimeout = e => reject(new Error(`XHR timeout: ${options.timeout}ms`));
-
-		if (options.timeout) {
-			xhr.timeout = options.timeout;
+		} catch (error) {
+			logFn?.(error.toString);
 		}
-
-		xhr.send(options.data);
-
-		// cancel
-		token.onCancellationRequested(() => {
-			xhr.abort();
-			reject(canceled());
-		});
 	});
 }
 

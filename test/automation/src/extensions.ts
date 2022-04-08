@@ -36,7 +36,7 @@ export class Extensions extends Viewlet {
 		await this.code.waitForTextContent(`div.part.sidebar div.composite.title h2`, 'Extensions: Marketplace');
 
 		let retrials = 1;
-		while (retrials++ < 3) {
+		while (retrials++ < 10) {
 			try {
 				return await this.code.waitForElement(`div.extensions-viewlet[id="workbench.view.extensions"] .monaco-list-row[data-extension-id="${id}"]`, undefined, 100);
 			} catch (error) {

@@ -31,7 +31,11 @@ export class RequestService implements IRequestService {
 			options.proxyAuthorization = this.configurationService.getValue<string>('http.proxyAuthorization');
 		}
 
-		return request(options, token);
+		return request(options, token, msg => {
+			if (options.url === 'https://az764295.vo.msecnd.net/extensions/marketplace.json') {
+				this.logService.info(`&&& Request trace: ${msg}`);
+			}
+		});
 	}
 
 	async resolveProxy(url: string): Promise<string | undefined> {
