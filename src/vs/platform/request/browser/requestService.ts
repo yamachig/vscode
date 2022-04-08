@@ -32,7 +32,7 @@ export class RequestService implements IRequestService {
 		}
 
 		return request(options, token, msg => {
-			if (options.url === 'https://az764295.vo.msecnd.net/extensions/marketplace.json') { // 1
+			if (options.url === 'https://az764295.vo.msecnd.net/extensions/marketplace.json') { // 12
 				this.logService.info(`&&& Request trace: ${msg}`);
 			}
 		});
