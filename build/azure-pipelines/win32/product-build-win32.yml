@@ -223,7 +223,7 @@ steps:
     continueOnError: true
     condition: succeededOrFailed()
 
-  # - powershell: |1
+  # - powershell: |2
   #     . build/azure-pipelines/win32/exec.ps1
   #     $ErrorActionPreference = "Stop"
   #     $env:VSCODE_REMOTE_SERVER_PATH = "$(agent.builddirectory)\vscode-reh-web-win32-$(VSCODE_ARCH)"
