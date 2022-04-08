@@ -123,8 +123,16 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		const now = new Date().getTime();
 
 		if (!this.extensionsControlManifest || now - this.lastReportTimestamp > 1000 * 60 * 5) { // 5 minute cache freshness
+			if (!this.extensionsControlManifest) {
+				this.logService.info('%%% getExtensionsControlManifest: creating new promise because this.extensionsControlManifest===undefined');
+			} else {
+				this.logService.info(`%%% getExtensionsControlManifest: creating new promise for 5 minute reached: ${now - this.lastReportTimestamp}, now: ${now}, lastReport: ${this.lastReportTimestamp}`);
+			}
+
 			this.extensionsControlManifest = this.updateControlCache();
 			this.lastReportTimestamp = now;
+		} else {
+			this.logService.info('%%% getExtensionsControlManifest: returning cached promise');
 		}
 
 		return this.extensionsControlManifest;

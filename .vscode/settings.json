@@ -99,10 +99,5 @@
 		"*.js": "$(capture).*.js",
 		"bootstrap.js": "bootstrap-*.js"
 	},
-	"explorer.experimental.fileNesting.enabled": true,
-	"editor.quickSuggestions": {
-		"other": "inline",
-		"comments": "inline",
-		"strings": "inline"
-	},
+	"explorer.experimental.fileNesting.enabled": true
 }

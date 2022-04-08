@@ -38,7 +38,7 @@ export class Extensions extends Viewlet {
 		let retrials = 1;
 		while (retrials++ < 3) {
 			try {
-				return await this.code.waitForElement(`div.extensions-viewlet[id="workbench.view.extensions"] .monaco-list-row[data-extension-id="${id}"]`, undefined, 700);
+				return await this.code.waitForElement(`div.extensions-viewlet[id="workbench.view.extensions"] .monaco-list-row[data-extension-id="${id}"]`, undefined, 100);
 			} catch (error) {
 				this.code.logger.log(`Extension '${id}' is not found. Retrying count: ${retrials}`);
 				await this.code.waitAndClick(REFRESH_BUTTON);
