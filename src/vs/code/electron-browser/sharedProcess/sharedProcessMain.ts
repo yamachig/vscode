@@ -330,7 +330,7 @@ class SharedProcessMain extends Disposable {
 			environmentService,
 			logService
 		);
-		ptyHostService.initialize(); //123
+		ptyHostService.initialize(); //1234
 
 		// Terminal
 		services.set(ILocalPtyService, this._register(ptyHostService));
