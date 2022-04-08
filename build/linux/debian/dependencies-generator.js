@@ -46,6 +46,7 @@ function getDependencies(buildDir, applicationName, arch) {
     });
 }
 exports.getDependencies = getDependencies;
+// Based on https://source.chromium.org/chromium/chromium/src/+/main:chrome/installer/linux/debian/calculate_package_deps.py.
 async function calculatePackageDeps(binaryPath, arch) {
     // TODO: Do we need this following try-catch check for Debian?
     // Test by running it through the CL.

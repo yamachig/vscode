@@ -10,10 +10,10 @@ import * as http from 'http';
 import * as path from 'path';
 import { sysrootInfo } from './sysroots';
 
-const DEFAULT_TARGET_VERSION = 'bullseye';
-const URL_PREFIX = 'https://msftelectron.blob.core.windows.net';
-const URL_PATH = 'sysroots/toolchain';
-const VALID_ARCH_LIST = ['arm64', 'i386', 'amd64'];
+// Based on https://source.chromium.org/chromium/chromium/src/+/main:build/linux/sysroot_scripts/install-sysroot.py.
+const URL_PREFIX = 'https://s3.amazonaws.com';
+const URL_PATH = 'electronjs-sysroots/toolchain';
+const VALID_ARCH_LIST = ['amd64', 'armhf', 'arm64'];
 
 function getSha(filename: fs.PathLike): string {
 	const hash = createHash('sha1');
@@ -36,20 +36,20 @@ type SysrootDictEntry = {
 	Tarball: string;
 };
 
-function getSysrootDict(arch: string, versionName: string): SysrootDictEntry {
+function getSysrootDict(arch: string): SysrootDictEntry {
 	if (!VALID_ARCH_LIST.includes(arch)) {
 		throw new Error('Unknown arch ' + arch);
 	}
 
-	const sysroot_key = versionName + '_' + arch;
+	const sysroot_key = 'sid_' + arch;
 	if (!sysrootInfo[sysroot_key]) {
-		throw new Error(`No sysroot for: ${versionName} ${arch}`);
+		throw new Error(`No sysroot for: ${arch}`);
 	}
 	return sysrootInfo[sysroot_key] as SysrootDictEntry;
 }
 
-export async function getSysroot(arch: string, versionName: string = DEFAULT_TARGET_VERSION): Promise<string> {
-	const sysrootDict = getSysrootDict(arch, versionName);
+export async function getSysroot(arch: string): Promise<string> {
+	const sysrootDict = getSysrootDict(arch);
 	const tarballFilename = sysrootDict['Tarball'];
 	const tarballSha = sysrootDict['Sha1Sum'];
 	const sysroot = path.join(__dirname, sysrootDict['SysrootDir']);
@@ -59,7 +59,7 @@ export async function getSysroot(arch: string, versionName: string = DEFAULT_TAR
 		return sysroot;
 	}
 
-	console.log(`Installing Debian ${versionName} ${arch} root image: ${sysroot}`);
+	console.log(`Installing Debian ${arch} root image: ${sysroot}`);
 	if (fs.statSync(sysroot).isDirectory()) {
 		console.log(sysroot);
 		console.log('We\'re support to remove it at this point');
