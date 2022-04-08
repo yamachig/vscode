@@ -60,10 +60,8 @@ export async function getSysroot(arch: string): Promise<string> {
 	}
 
 	console.log(`Installing Debian ${arch} root image: ${sysroot}`);
-	if (fs.statSync(sysroot).isDirectory()) {
-		console.log(sysroot);
-		console.log('We\'re support to remove it at this point');
-		// fs.rmSync(sysroot, { recursive: true, force: true });
+	if (fs.existsSync(sysroot) && fs.statSync(sysroot).isDirectory()) {
+		fs.rmSync(sysroot, { recursive: true, force: true });
 	}
 	fs.mkdirSync(sysroot);
 	const tarball = path.join(sysroot, tarballFilename);
