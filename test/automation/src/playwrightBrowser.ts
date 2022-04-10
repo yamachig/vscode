@@ -30,7 +30,7 @@ export async function launch(options: LaunchOptions): Promise<{ serverProcess: C
 	return {
 		serverProcess,
 		client: {
-			dispose: () => { /* there is no client to dispose for browser, teardown is triggered via exitApplication call 2 */ }
+			dispose: () => { /* there is no client to dispose for browser, teardown is triggered via exitApplication call 3 */ }
 		},
 		driver: new PlaywrightDriver(browser, context, page, serverProcess.pid, options),
 		kill: () => teardown(serverProcess.pid, options.logger)
